@@ -1,8 +1,8 @@
-main: main.6 tape.6
-	6l main.6
+include $(GOROOT)/src/Make.inc
 
-main.6: main.go
-	6g main.go
+TARG=tape
 
-tape.6: tape.go
-	6g tape.go
+GOFILES=\
+	tape.go
+
+include $(GOROOT)/src/Make.pkg
