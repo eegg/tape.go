@@ -50,18 +50,6 @@ func NewTape(src Reader) *Tape {
 func NewTapeFromReadByter(src io.ReadByter) *Tape {
 	return NewTape(NewReadByterWrapper(src))
 }
-/*
-func NewTapeFromFile(src *os.File) *Tape {
-	return NewTapeFromBufioReader(bufio.NewReader(src))
-}
-
-func NewTapeFromFilename(filename string) (*Tape, os.Error) {
-	file, err := os.Open(filename, os.O_RDONLY, 0666)
-	if err != nil {
-		return nil, err
-	}
-	return NewTapeFromFile(file), nil
-}*/
 
 func (this *Tape) ReadElement() (interface{}, os.Error) {
 	// Get the element under the read head.
