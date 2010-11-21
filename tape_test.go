@@ -17,11 +17,11 @@ func TestBasicRead(test *testing.T) {
 	bs := bytes.NewBufferString("")
 
 	for {
-		byte, err := t.ReadByte()
+		char, err := t.ReadElement()
 		if err != nil {
 			return
 		} else {
-			fmt.Fprintf(bs, "%c", byte)
+			fmt.Fprintf(bs, "%c", char)
 		}
 	}
 
@@ -37,7 +37,7 @@ func TestSmallRewind(test *testing.T) {
 	t := NewTape(bufio.NewReader(strings.NewReader("hello, world!")))	
 
 	test_read := func(expected_char byte) {
-		out_char, err := t.ReadByte()
+		out_char, err := t.ReadElement()
 		if err != nil {
 			test.Errorf("Unexpected end of characters; expecting '%c'", expected_char)
 		} else if out_char != expected_char	{

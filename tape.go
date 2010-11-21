@@ -9,17 +9,17 @@ const nodeLen = 100
 // Max index of node.contents is 99
 
 type node struct {
-	contents [nodeLen]byte
+	contents [nodeLen]interface{}
 	prev *node
 	next *node
 }
 
 type Tape struct {
 	frontNode *node    // The node in which we're writing to the front of the queue
-	frontIndex int     // The index of the byte in `contents` to be written next
+	frontIndex int     // The index of the element in `contents` to be written next
 
 	readNode *node     // The node from which we're reading
-	readIndex int      // The index into read.contents of the byte to be read next
+	readIndex int      // The index into read.contents of the element to be read next
 
 	src *bufio.Reader  // The source from which we're reading
 }
@@ -41,8 +41,8 @@ func NewTapeFromFilename(filename string) (*Tape, os.Error) {
 	return NewTapeFromFile(file), nil
 }
 
-func (this *Tape) ReadByte() (byte, os.Error) {
-	// Get the byte under the read head.
+func (this *Tape) ReadElement() (interface{}, os.Error) {
+	// Get the element under the read head.
 	// If the source Buffer returns an error, return it.
 
 	if this.frontNode == this.readNode && this.frontIndex == this.readIndex {
@@ -53,7 +53,6 @@ func (this *Tape) ReadByte() (byte, os.Error) {
 		if ok != nil {
 			return 0, ok
 		}
-
 
 		// If we're out of space (i.e. frontIndex == nodeLen)
 		// then allocate a new node.
@@ -72,7 +71,7 @@ func (this *Tape) ReadByte() (byte, os.Error) {
 		this.readNode = this.frontNode
 		this.readIndex = this.frontIndex
 
-		return outByte, nil
+		return interface{}(outByte), nil
 	}
 
 	// Else just read from our record
@@ -86,12 +85,12 @@ func (this *Tape) ReadByte() (byte, os.Error) {
 	outByte := this.readNode.contents[this.readIndex]
 	this.readIndex++
 
-	return outByte, nil
+	return interface{}(outByte), nil
 }
 
 
 func (this *Tape) Rewind(howMany int) (ok bool) {
-	// Rewind the read head by `howMany` bytes.
+	// Rewind the read head by `howMany` elements.
 	// Return `false` if rewinding this far is not possible.
 
 	// Rewind as many nodes as we can
