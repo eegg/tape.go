@@ -1,7 +1,7 @@
 package tape
 
 import (
-	"bufio"
+	"io"
 	"os"
 	)
 
@@ -14,6 +14,24 @@ type node struct {
 	next *node
 }
 
+type Reader interface {
+	// The interface type accepted as a source
+	ReadElement() (interface{}, os.Error)
+}
+
+type ReadByterWrapper struct {
+	// Wrap a io.ReadByter
+	src io.ReadByter
+}
+
+func (this *ReadByterWrapper) ReadElement() (interface{}, os.Error) {
+	return this.src.ReadByte()
+}
+
+func NewReadByterWrapper(src io.ReadByter) *ReadByterWrapper {
+	return &ReadByterWrapper{src}
+}
+
 type Tape struct {
 	frontNode *node    // The node in which we're writing to the front of the queue
 	frontIndex int     // The index of the element in `contents` to be written next
@@ -21,16 +39,20 @@ type Tape struct {
 	readNode *node     // The node from which we're reading
 	readIndex int      // The index into read.contents of the element to be read next
 
-	src *bufio.Reader  // The source from which we're reading
+	src Reader         // The source from which we're reading
 }
 
-func NewTape(src *bufio.Reader) *Tape {
+func NewTape(src Reader) *Tape {
 	frontNode := &node{}
 	return &Tape{ frontNode: frontNode, readNode: frontNode, src: src }
 }
 
+func NewTapeFromReadByter(src io.ReadByter) *Tape {
+	return NewTape(NewReadByterWrapper(src))
+}
+/*
 func NewTapeFromFile(src *os.File) *Tape {
-	return NewTape(bufio.NewReader(src))
+	return NewTapeFromBufioReader(bufio.NewReader(src))
 }
 
 func NewTapeFromFilename(filename string) (*Tape, os.Error) {
@@ -39,7 +61,7 @@ func NewTapeFromFilename(filename string) (*Tape, os.Error) {
 		return nil, err
 	}
 	return NewTapeFromFile(file), nil
-}
+}*/
 
 func (this *Tape) ReadElement() (interface{}, os.Error) {
 	// Get the element under the read head.
@@ -48,7 +70,7 @@ func (this *Tape) ReadElement() (interface{}, os.Error) {
 	if this.frontNode == this.readNode && this.frontIndex == this.readIndex {
 		// We reading from the front.
 		// get the next from the source (and record it)
-		outByte, ok := this.src.ReadByte()
+		outElement, ok := this.src.ReadElement()
 
 		if ok != nil {
 			return 0, ok
@@ -64,14 +86,14 @@ func (this *Tape) ReadElement() (interface{}, os.Error) {
 		}
 
 		// Now record it
-		this.frontNode.contents[this.frontIndex] = outByte
+		this.frontNode.contents[this.frontIndex] = outElement
 		this.frontIndex++
 
 		// Keep the read head up to date
 		this.readNode = this.frontNode
 		this.readIndex = this.frontIndex
 
-		return interface{}(outByte), nil
+		return outElement, nil
 	}
 
 	// Else just read from our record

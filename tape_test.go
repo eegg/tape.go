@@ -12,7 +12,7 @@ const sample_string = "Once upon a midnight dreary, while I pondered, weak and w
 
 
 func TestBasicRead(test *testing.T) {
-	t := NewTape(bufio.NewReader(strings.NewReader(sample_string)))
+	t := NewTapeFromReadByter(bufio.NewReader(strings.NewReader(sample_string)))
 
 	bs := bytes.NewBufferString("")
 
@@ -34,7 +34,7 @@ func TestBasicRead(test *testing.T) {
 
 
 func TestSmallRewind(test *testing.T) {
-	t := NewTape(bufio.NewReader(strings.NewReader("hello, world!")))	
+	t := NewTapeFromReadByter(bufio.NewReader(strings.NewReader("hello, world!")))	
 
 	test_read := func(expected_char byte) {
 		out_char, err := t.ReadElement()
